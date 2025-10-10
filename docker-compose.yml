@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  # Main Training1 platform database
+  postgres:
+    image: postgres:15-alpine
+    container_name: training1-postgres
+    environment:
+      POSTGRES_DB: training1
+      POSTGRES_USER: training1_user
+      POSTGRES_PASSWORD: training1_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    networks:
+      - training1-network
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    container_name: training1-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - training1-network
+
+  # Backend API service
+  backend:
+    build:
+      context: ../Training1-Backend
+      dockerfile: Dockerfile
+    container_name: training1-backend
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://training1_user:training1_password@postgres:5432/training1
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: your-jwt-secret-here
+      PORT: 3001
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ../Training1-Backend:/app
+      - /app/node_modules
+    networks:
+      - training1-network
+    command: npm run dev
+
+  # Frontend React application
+  frontend:
+    build:
+      context: ../Training1-Frontend
+      dockerfile: Dockerfile
+    container_name: training1-frontend
+    environment:
+      REACT_APP_API_URL: http://localhost:3001
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ../Training1-Frontend:/app
+      - /app/node_modules
+    networks:
+      - training1-network
+    command: npm start
+
+  # Optional: Email service for development
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: training1-mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - training1-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  training1-network:
+    driver: bridge

@@ -1,0 +1,47 @@
+{
+  "name": "training1-platform",
+  "version": "1.0.0",
+  "description": "Training1 Platform - Comprehensive solution for subscription-based training modules",
+  "scripts": {
+    "setup": "node scripts/setup.js",
+    "dev": "docker-compose up",
+    "dev:backend": "cd ../Training1-Backend && npm run dev",
+    "dev:frontend": "cd ../Training1-Frontend && npm start",
+    "build": "docker-compose build",
+    "start": "docker-compose up -d",
+    "stop": "docker-compose down",
+    "clean": "docker-compose down -v --remove-orphans",
+    "logs": "docker-compose logs -f",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd ../Training1-Backend && npm test",
+    "test:frontend": "cd ../Training1-Frontend && npm test",
+    "lint": "npm run lint:backend && npm run lint:frontend",
+    "lint:backend": "cd ../Training1-Backend && npm run lint",
+    "lint:frontend": "cd ../Training1-Frontend && npm run lint"
+  },
+  "keywords": [
+    "training",
+    "platform",
+    "subscription",
+    "saas",
+    "education",
+    "courses"
+  ],
+  "author": "Training1 Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/carpe1al/training1.git"
+  },
+  "bugs": {
+    "url": "https://github.com/carpe1al/training1/issues"
+  },
+  "homepage": "https://github.com/carpe1al/training1#readme"
+}
