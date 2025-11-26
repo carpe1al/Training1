@@ -1,0 +1,174 @@
+# Render Blueprint
+# Infrastructure as Code for Training1 Platform
+
+services:
+  # PostgreSQL Database
+  - type: pserv
+    name: training1-db
+    env: docker
+    plan: starter
+    region: oregon
+    dockerfilePath: ./docker/postgres/Dockerfile
+    envVars:
+      - key: POSTGRES_USER
+        value: training1
+      - key: POSTGRES_PASSWORD
+        generateValue: true
+      - key: POSTGRES_DB
+        value: training1
+    disk:
+      name: postgres-data
+      mountPath: /var/lib/postgresql/data
+      sizeGB: 10
+
+  # Redis
+  - type: redis
+    name: training1-redis
+    plan: starter
+    region: oregon
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
+
+  # Backend API
+  - type: web
+    name: training1-backend
+    env: node
+    region: oregon
+    plan: starter
+    branch: master
+    rootDir: Training1-Backend
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npm run start:prod
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: training1-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: training1-redis
+          type: redis
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: LOG_LEVEL
+        value: info
+      - key: CORS_ORIGIN_FRONTEND
+        sync: false
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_ACCESS_KEY
+        sync: false
+      - key: S3_SECRET_KEY
+        sync: false
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_REGION
+        value: us-east-1
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: ELEVENLABS_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: TYPESENSE_HOST
+        sync: false
+      - key: TYPESENSE_API_KEY
+        sync: false
+
+  # Background Workers
+  - type: worker
+    name: training1-workers
+    env: node
+    region: oregon
+    plan: starter
+    branch: master
+    rootDir: Training1-Backend
+    buildCommand: npm install && npx prisma generate
+    startCommand: node dist/jobs/workers/index.js
+    envVars:
+      - fromService:
+          name: training1-backend
+          type: web
+          envVarKey: DATABASE_URL
+      - fromService:
+          name: training1-backend
+          type: web
+          envVarKey: REDIS_URL
+      - fromService:
+          name: training1-backend
+          type: web
+          envVarKey: S3_ENDPOINT
+      - fromService:
+          name: training1-backend
+          type: web
+          envVarKey: S3_ACCESS_KEY
+      - fromService:
+          name: training1-backend
+          type: web
+          envVarKey: S3_SECRET_KEY
+      - fromService:
+          name: training1-backend
+          type: web
+          envVarKey: S3_BUCKET
+
+  # Frontend
+  - type: web
+    name: training1-frontend
+    env: node
+    region: oregon
+    plan: starter
+    branch: master
+    rootDir: Training1-Frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          name: training1-backend
+          type: web
+          property: host
+      - key: NEXT_PUBLIC_WS_URL
+        fromService:
+          name: training1-backend
+          type: web
+          property: host
+      - key: NEXTAUTH_SECRET
+        generateValue: true
+      - key: NEXTAUTH_URL
+        sync: false
+      - key: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+        sync: false
+
+  # Typesense Search (Docker)
+  - type: pserv
+    name: training1-search
+    env: docker
+    plan: starter
+    region: oregon
+    dockerCommand: --data-dir /data --api-key=$TYPESENSE_API_KEY --enable-cors
+    image:
+      url: docker.io/typesense/typesense:0.25.1
+    envVars:
+      - key: TYPESENSE_API_KEY
+        generateValue: true
+    disk:
+      name: typesense-data
+      mountPath: /data
+      sizeGB: 10
+
+databases:
+  - name: training1-db
+    databaseName: training1
+    user: training1
+    plan: starter
+    region: oregon

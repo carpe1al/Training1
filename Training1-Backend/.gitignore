@@ -1,12 +1,10 @@
-# Ignore VSCode extensions and user-specific files
-../.vscode/extensions/
+# Ignore parent directory VSCode extensions and user files
+../.vscode/
 ../.cache/
 ../.claude/
 ../.config/
 ../.gk/
 ../.yarnrc
-
-# Ignore parent directory items
 ../AppData/
 ../Contacts/
 ../Downloads/
@@ -27,8 +25,8 @@
 ../package.json
 ../pemhttpd.exe
 
-# Training1 repositories (they have their own repos)
-../Training1-Backend/
+# Other Training1 repositories (they have their own repos)
+../Training1/
 ../Training1-Frontend/
 
 # Node modules and build outputs
@@ -40,9 +38,6 @@ build/
 .env.development.local  
 .env.test.local
 .env.production.local
-
-# Sensitive database credentials
-DATABASE_INFO.md
 
 # Logs
 logs
@@ -89,13 +84,7 @@ jspm_packages/
 
 # dotenv environment variables file
 .env
-.env.local
-.env.*.local
-
-# But allow example and test env files
-!.env.example
-!.env.test
-!.env.local.example
+.env.test
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
