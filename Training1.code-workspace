@@ -1,0 +1,16 @@
+{
+  "folders": [
+    {
+      "name": "Training1 (Main)",
+      "path": "."
+    },
+    {
+      "name": "Training1Backend",
+      "path": "../Training1Backend"
+    },
+    {
+      "name": "Training1-Frontend",
+      "path": "../Training1-Frontend"
+    }
+  ]
+}
