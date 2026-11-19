@@ -46,8 +46,9 @@ services:
         generateValue: true
       - key: JWT_EXPIRES_IN
         value: 7d
+      # Every address the website can be opened from (comma-separated).
       - key: CORS_ORIGIN_FRONTEND
-        value: https://training1-frontend.onrender.com
+        value: https://training1.co,https://www.training1.co,https://training1-frontend.onrender.com
       # Optional: the in-app assistant shows as "not set up" without it.
       - key: ANTHROPIC_API_KEY
         sync: false
@@ -62,6 +63,11 @@ services:
     region: oregon
     buildCommand: npm ci --include=dev && npm run build
     startCommand: npm start
+    # Render also adds www.training1.co and redirects it here. DNS at the registrar:
+    #   training1.co      A      216.24.57.1
+    #   www.training1.co  CNAME  training1-frontend.onrender.com
+    domains:
+      - training1.co
     envVars:
       - key: NODE_VERSION
         value: 24.12.0
