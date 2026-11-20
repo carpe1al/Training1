@@ -43,7 +43,7 @@ A platform owner (the `SUPER_ADMIN` role) sees and manages every organization at
 - `NEXT_PUBLIC_API_BASE_URL` is baked into the website at build time. It is set in Vercel (Settings > Environment Variables) to the API's address; changing it needs a redeploy of the website.
 - `CORS_ORIGIN_FRONTEND` on the API must list every address the website is opened from, exactly (no trailing slash). It lists `training1.co` and `www.training1.co`; the `vercel.app` address and Vercel preview links are not listed, so sign-in fails from those.
 - `training1.co` is added on the Vercel project's Domains page; the DNS records at the registrar are the ones Vercel shows there.
-- Everything is on the free plan. Web services sleep after a period without traffic, and the free database expires 30 days after creation unless upgraded (check the date on the database page in Render). Upgrade by changing `plan:` in `render.yaml`.
+- The API is on the free plan: it sleeps after a period without traffic, and Render blocks outgoing SMTP from free services. The database is on the smallest paid plan (`0.1c-256mb`, 1 GB disk), so it does not expire. Change either with `plan:` in `render.yaml`; the database's disk can be raised but not lowered.
 - The background workers in the backend (`src/jobs`) are not deployed. They are excluded from the production build (`tsconfig.build.json`) until they are wired in, at which point they will need Redis.
 
 ## Starting from scratch

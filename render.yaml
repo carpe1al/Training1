@@ -10,9 +10,10 @@
 # redeploy. training1.co is added on the Vercel project's Domains page, and the
 # DNS records to create at the registrar are the ones Vercel shows there.
 #
-# Everything is on the free plan to start. Free web services go to sleep after
-# 15 minutes without traffic (first request then takes ~1 minute), and a free
-# database is deleted after 30 days. Change `plan:` to upgrade.
+# The API is on the free plan: it goes to sleep after 15 minutes without
+# traffic (the first request then takes ~1 minute) and can't send SMTP mail.
+# The database is on the smallest paid plan, so it is kept (free databases are
+# deleted 30 days after creation). Change `plan:` to upgrade either.
 #
 # The API's address is assumed to be https://training1-backend.onrender.com.
 # If Render adds a suffix (e.g. training1-backend-x1y2.onrender.com), use that
@@ -22,7 +23,10 @@ databases:
   - name: training1-db
     databaseName: training1
     user: training1
-    plan: free
+    # Smallest paid plan (256 MB RAM). Disk is billed per GB and can be raised
+    # later (to 5 or a multiple of 5) but never lowered.
+    plan: 0.1c-256mb
+    diskSizeGB: 1
     region: oregon
 
 services:
