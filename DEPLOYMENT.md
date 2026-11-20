@@ -18,7 +18,17 @@ The API and database live in the **Training1** project in the Render dashboard, 
 - **Database changes:** commit Prisma migrations with the backend. They are applied at startup (`prisma migrate deploy` runs before the server starts).
 - **Change API infrastructure or environment variables:** edit `render.yaml`, push to `master` in this repo. Render syncs the Blueprint automatically.
 - **Change website settings** (environment variables, domains): on the project page in Vercel.
-- **Secrets** (e.g. `ANTHROPIC_API_KEY`) are marked `sync: false` in `render.yaml` and are set by hand on the service's Environment page.
+- **Secrets** (e.g. `ANTHROPIC_API_KEY`) and `SUPER_ADMIN_EMAILS` are marked `sync: false` in `render.yaml` and are set by hand on the service's Environment page.
+
+## Platform owners
+
+A platform owner (the `SUPER_ADMIN` role) sees and manages every organization at `/platform`.
+
+- **Who can be one:** only the emails in `SUPER_ADMIN_EMAILS` on the API service in Render (comma-separated). The list is checked when the account is created, at sign-in and on every request. Removing an email shuts that owner out as soon as the service restarts; an owner row added straight to the database does nothing unless its email is listed.
+- **Create the account:** add the email in Render, then open https://training1.co/owner-setup (not linked from the site), choose a password, and scan the QR code with an authenticator app. Each listed email can be claimed once, so create the account right after adding the email.
+- **Signing in:** password, then the 6-digit code from the authenticator app, every time. Five wrong codes lock the code step for 15 minutes.
+- **Lost phone:** from the backend repo with `DATABASE_URL` pointing at the database, run `npm run owner:reset-mfa -- you@example.com`. The owner sets up a new app at their next sign-in.
+- The authenticator secrets are encrypted with a key derived from `JWT_SECRET`. If `JWT_SECRET` ever changes, run the reset for each owner.
 
 ## Things to know
 

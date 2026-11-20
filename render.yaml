@@ -56,6 +56,13 @@ services:
       # no trailing slash). To use the site at its vercel.app address too, add that here.
       - key: CORS_ORIGIN_FRONTEND
         value: https://training1.co,https://www.training1.co
+      # The only emails that may be platform owners (comma-separated, e.g.
+      # you@example.com,partner@example.com). Set by hand on the service's
+      # Environment page. An owner account can only be created (at /owner-setup on
+      # the website) for an email listed here, and it is re-checked on every
+      # request, so removing an email shuts that owner out. Empty = no owners.
+      - key: SUPER_ADMIN_EMAILS
+        sync: false
       # Optional: the in-app assistant shows as "not set up" without it.
       - key: ANTHROPIC_API_KEY
         sync: false
