@@ -72,6 +72,13 @@ services:
       # you are adding an owner, then remove it. Unset = no new owners can be created.
       - key: OWNER_SETUP_CODE
         sync: false
+      # Optional: outgoing email through Resend (invites, password reset links,
+      # "forgot password"). Without the key, admins hand those links over
+      # themselves. The sender's domain must be verified in Resend.
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        value: Training1 <no-reply@training1.co>
       # Optional: the in-app assistant shows as "not set up" without it.
       - key: ANTHROPIC_API_KEY
         sync: false

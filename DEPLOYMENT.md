@@ -18,7 +18,7 @@ The API and database live in the **Training1** project in the Render dashboard, 
 - **Database changes:** commit Prisma migrations with the backend. They are applied at startup (`prisma migrate deploy` runs before the server starts).
 - **Change API infrastructure or environment variables:** edit `render.yaml`, push to `master` in this repo. Render syncs the Blueprint automatically.
 - **Change website settings** (environment variables, domains): on the project page in Vercel.
-- **Secrets** (e.g. `ANTHROPIC_API_KEY`) and `SUPER_ADMIN_EMAILS` are marked `sync: false` in `render.yaml` and are set by hand on the service's Environment page.
+- **Secrets** (e.g. `ANTHROPIC_API_KEY`) and `RESEND_API_KEY`, `SUPER_ADMIN_EMAILS` and `OWNER_SETUP_CODE` are marked `sync: false` in `render.yaml` and are set by hand on the service's Environment page.
 
 ## Platform owners
 
@@ -31,11 +31,13 @@ A platform owner (the `SUPER_ADMIN` role) sees and manages every organization at
 - **Lost phone:** sign in with a backup code. With none left, from the backend repo with `DATABASE_URL` pointing at the database, run `npm run owner:reset-mfa -- you@example.com`. The owner sets up a new app and gets new backup codes at their next sign-in.
 - **Forgotten password:** from the backend repo with `DATABASE_URL` pointing at the database, run `npm run account:reset-link -- you@example.com` and open the link it prints (one use, 24 hours). It only changes the password: the authenticator code is still needed to sign in.
 - The authenticator secrets are encrypted with a key derived from `JWT_SECRET`. If `JWT_SECRET` ever changes, run the reset for each owner.
+- **Looking inside an organization:** clicking an organization on the Platform page shows who is in it (names, emails, roles, last sign-in) and its activity, read-only. It never shows training content or results, and each look is recorded in the activity log.
 - **Activity log:** the Platform page lists the last 100 platform-owner sign-ins, organization changes (suspend, restore, plan) and password resets, with who did it and from which address.
 
 ## Passwords and sign-in limits
 
-- **Password resets:** there is no outgoing email. A company admin makes a one-time reset link for a person on the People page and sends it to them. For someone no admin can help (a company's only admin, or a platform owner), use `npm run account:reset-link -- <email>` as above. Changing a password signs that person out everywhere.
+- **Email:** optional, sent through [Resend](https://resend.com) (Render's free plan blocks SMTP, so a mailbox can't be used directly). It is on when `RESEND_API_KEY` is set on the API service; `EMAIL_FROM` is the sender and its domain (`training1.co`) must be verified in Resend. The DNS records Resend asks for live at IONOS: add the DKIM record and the two `send` records only. Do not add Resend's receiving (`MX @`) record, which would take incoming mail away from the IONOS mailbox.
+- **Password resets:** with email on, the sign-in page has "Forgot your password?", which emails a one-time link, and invites and admin-made reset links are emailed too. Without email, a company admin makes a one-time reset link for a person on the People page and sends it to them. For someone no admin can help (a company's only admin, or a platform owner), use `npm run account:reset-link -- <email>` as above. Changing a password signs that person out everywhere.
 - **Sign-in limits:** 10 sign-in attempts per email every 15 minutes, plus looser limits per network address on sign-in, reset links and platform-owner setup. The counts are held in the API's memory, so they reset when the service restarts and assume the API runs as a single instance.
 
 ## Things to know
