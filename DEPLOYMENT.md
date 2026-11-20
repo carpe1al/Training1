@@ -1,33 +1,36 @@
-# Deployment (Render)
+# Deployment (Render + Vercel)
 
-Training1 runs on Render from the Blueprint in [render.yaml](render.yaml). That file is the source of truth; this page only explains how to work with it.
+The API and database run on Render from the Blueprint in [render.yaml](render.yaml); that file is the source of truth for them. The website runs on Vercel, set up on the Vercel project page. This page only explains how to work with both.
 
 ## What is deployed
 
 | Resource | Type | Source | Address |
 | --- | --- | --- | --- |
-| `training1-frontend` | Web service (Next.js) | `carpe1al/Training1-Frontend`, branch `main` | https://training1-frontend.onrender.com |
-| `training1-backend` | Web service (Fastify API) | `carpe1al/Training1Backend`, branch `main` | https://training1-backend.onrender.com |
-| `training1-db` | PostgreSQL | managed by Render | internal only |
+| Website | Vercel project (Next.js) | `carpe1al/Training1-Frontend`, branch `main` | https://training1.co |
+| `training1-backend` | Render web service (Fastify API) | `carpe1al/Training1Backend`, branch `main` | https://training1-backend.onrender.com |
+| `training1-db` | Render PostgreSQL | managed by Render | internal only |
 
-All three live in the **Training1** project in the Render dashboard, under the `training1` Blueprint.
+The API and database live in the **Training1** project in the Render dashboard, under the `training1` Blueprint.
 
 ## Day to day
 
-- **Ship code:** merge to `main` in the frontend or backend repo. Render builds and deploys on its own.
+- **Ship code:** merge to `main` in the frontend or backend repo. Vercel (website) and Render (API) build and deploy on their own.
 - **Database changes:** commit Prisma migrations with the backend. They are applied at startup (`prisma migrate deploy` runs before the server starts).
-- **Change infrastructure or environment variables:** edit `render.yaml`, push to `master` in this repo. Render syncs the Blueprint automatically.
+- **Change API infrastructure or environment variables:** edit `render.yaml`, push to `master` in this repo. Render syncs the Blueprint automatically.
+- **Change website settings** (environment variables, domains): on the project page in Vercel.
 - **Secrets** (e.g. `ANTHROPIC_API_KEY`) are marked `sync: false` in `render.yaml` and are set by hand on the service's Environment page.
 
 ## Things to know
 
-- `NEXT_PUBLIC_API_BASE_URL` is baked into the website at build time. Changing it needs a redeploy of the frontend, not just a restart.
-- `CORS_ORIGIN_FRONTEND` on the API must list every address the website is opened from.
+- `NEXT_PUBLIC_API_BASE_URL` is baked into the website at build time. It is set in Vercel (Settings > Environment Variables) to the API's address; changing it needs a redeploy of the website.
+- `CORS_ORIGIN_FRONTEND` on the API must list every address the website is opened from, exactly (no trailing slash). It lists `training1.co` and `www.training1.co`; the `vercel.app` address and Vercel preview links are not listed, so sign-in fails from those.
+- `training1.co` is added on the Vercel project's Domains page; the DNS records at the registrar are the ones Vercel shows there.
 - Everything is on the free plan. Web services sleep after a period without traffic, and the free database expires 30 days after creation unless upgraded (check the date on the database page in Render). Upgrade by changing `plan:` in `render.yaml`.
 - The background workers in the backend (`src/jobs`) are not deployed. They are excluded from the production build (`tsconfig.build.json`) until they are wired in, at which point they will need Redis.
 
 ## Starting from scratch
 
-1. In Render: **New > Blueprint**, pick `carpe1al/Training1`, and grant access to the frontend and backend repos.
+1. In Render: **New > Blueprint**, pick `carpe1al/Training1`, and grant access to the backend repo.
 2. Click **Deploy Blueprint**.
-3. Open the website and use **Register** to create the first organisation and admin.
+3. In Vercel: **Add New > Project**, import `carpe1al/Training1-Frontend`, set `NEXT_PUBLIC_API_BASE_URL` to the API's address, and deploy. Then add `training1.co` under Domains.
+4. Open the website and use **Register** to create the first organisation and admin.

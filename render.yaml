@@ -1,16 +1,22 @@
 # Render Blueprint for Training1
 #
 # In Render: New > Blueprint > pick this repo (carpe1al/Training1).
-# It creates three things: a Postgres database, the API and the website.
-# The API and website code live in their own repos (see `repo:` below).
+# It creates two things: a Postgres database and the API.
+# The API code lives in its own repo (see `repo:` below).
+#
+# The website (carpe1al/Training1-Frontend) is hosted on Vercel, not here.
+# In Vercel it needs one environment variable, NEXT_PUBLIC_API_BASE_URL, set to
+# the API's address below. It is baked in at build time, so changing it needs a
+# redeploy. training1.co is added on the Vercel project's Domains page, and the
+# DNS records to create at the registrar are the ones Vercel shows there.
 #
 # Everything is on the free plan to start. Free web services go to sleep after
 # 15 minutes without traffic (first request then takes ~1 minute), and a free
 # database is deleted after 30 days. Change `plan:` to upgrade.
 #
-# The two URLs below assume Render gives the services their plain names.
-# If Render adds a suffix (e.g. training1-backend-x1y2.onrender.com), update
-# CORS_ORIGIN_FRONTEND and NEXT_PUBLIC_API_BASE_URL to match and redeploy.
+# The API's address is assumed to be https://training1-backend.onrender.com.
+# If Render adds a suffix (e.g. training1-backend-x1y2.onrender.com), use that
+# address for NEXT_PUBLIC_API_BASE_URL in Vercel and redeploy the website.
 
 databases:
   - name: training1-db
@@ -46,33 +52,10 @@ services:
         generateValue: true
       - key: JWT_EXPIRES_IN
         value: 7d
-      # Every address the website can be opened from (comma-separated).
+      # Every address the website can be opened from (comma-separated, exact match,
+      # no trailing slash). To use the site at its vercel.app address too, add that here.
       - key: CORS_ORIGIN_FRONTEND
-        value: https://training1.co,https://www.training1.co,https://training1-frontend.onrender.com
+        value: https://training1.co,https://www.training1.co
       # Optional: the in-app assistant shows as "not set up" without it.
       - key: ANTHROPIC_API_KEY
         sync: false
-
-  # Website (Next.js)
-  - type: web
-    name: training1-frontend
-    runtime: node
-    repo: https://github.com/carpe1al/Training1-Frontend
-    branch: main
-    plan: free
-    region: oregon
-    buildCommand: npm ci --include=dev && npm run build
-    startCommand: npm start
-    # Render also adds www.training1.co and redirects it here. DNS at the registrar:
-    #   training1.co      A      216.24.57.1
-    #   www.training1.co  CNAME  training1-frontend.onrender.com
-    domains:
-      - training1.co
-    envVars:
-      - key: NODE_VERSION
-        value: 24.12.0
-      - key: NODE_ENV
-        value: production
-      # Baked in at build time: changing it needs a redeploy, not just a restart.
-      - key: NEXT_PUBLIC_API_BASE_URL
-        value: https://training1-backend.onrender.com
