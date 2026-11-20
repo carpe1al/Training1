@@ -63,6 +63,11 @@ services:
       # request, so removing an email shuts that owner out. Empty = no owners.
       - key: SUPER_ADMIN_EMAILS
         sync: false
+      # A second secret asked for at /owner-setup, so knowing a listed email is not
+      # enough to claim its account. Set by hand (a long random value) only while
+      # you are adding an owner, then remove it. Unset = no new owners can be created.
+      - key: OWNER_SETUP_CODE
+        sync: false
       # Optional: the in-app assistant shows as "not set up" without it.
       - key: ANTHROPIC_API_KEY
         sync: false

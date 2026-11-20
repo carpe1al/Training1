@@ -138,3 +138,5 @@ ehthumbs.db
 
 # Docker
 .dockerignore
+# Stray working-directory markers left by Claude Code
+tmpclaude-*
