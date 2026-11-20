@@ -28,7 +28,14 @@ A platform owner (the `SUPER_ADMIN` role) sees and manages every organization at
 - **Create the account:** add the email in Render, then open https://training1.co/owner-setup (not linked from the site), choose a password, and scan the QR code with an authenticator app. Each listed email can be claimed once, so create the account right after adding the email.
 - **Signing in:** password, then the 6-digit code from the authenticator app, every time. Five wrong codes lock the code step for 15 minutes.
 - **Lost phone:** from the backend repo with `DATABASE_URL` pointing at the database, run `npm run owner:reset-mfa -- you@example.com`. The owner sets up a new app at their next sign-in.
+- **Forgotten password:** from the backend repo with `DATABASE_URL` pointing at the database, run `npm run account:reset-link -- you@example.com` and open the link it prints (one use, 24 hours). It only changes the password: the authenticator code is still needed to sign in.
 - The authenticator secrets are encrypted with a key derived from `JWT_SECRET`. If `JWT_SECRET` ever changes, run the reset for each owner.
+- **Activity log:** the Platform page lists the last 100 platform-owner sign-ins, organization changes (suspend, restore, plan) and password resets, with who did it and from which address.
+
+## Passwords and sign-in limits
+
+- **Password resets:** there is no outgoing email. A company admin makes a one-time reset link for a person on the People page and sends it to them. For someone no admin can help (a company's only admin, or a platform owner), use `npm run account:reset-link -- <email>` as above. Changing a password signs that person out everywhere.
+- **Sign-in limits:** 10 sign-in attempts per email every 15 minutes, plus looser limits per network address on sign-in, reset links and platform-owner setup. The counts are held in the API's memory, so they reset when the service restarts and assume the API runs as a single instance.
 
 ## Things to know
 
